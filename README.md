@@ -3,7 +3,8 @@
 ## Sobre o projeto
 
 O **GearTubePlay** é um projeto que visa desenvolver uma plataforma de hospedagem, reprodução e compartilhamento de vídeos dedicada exclusivamente ao universo automotivo.
-
+ https://carinha-que-mora-logo-ali.github.io/geartube-prototipo/
+ 
 A proposta é oferecer um ambiente especializado, reduzindo a dispersão de conteúdo e o excesso de conteúdos não relacionados ao interesse do público automotivo, características comuns em plataformas de uso geral.
 
 ## Público-alvo
