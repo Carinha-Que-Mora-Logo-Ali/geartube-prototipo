@@ -362,4 +362,89 @@
         // Filtro por Categoria Lateral
         function filterCategory(category) {
             currentFilter = category;
-            document.getElementById('section-title').innerHTML =
+            document.getElementById('section-title').innerHTML = `<span>${category === 'Início' ? 'Explorando o Mundo Automotivo' : category}</span>`;
+            
+            // Atualizar classes ativas no menu
+            document.querySelectorAll('#sidebar a').forEach(el => {
+                if(el.innerText.includes(category)) {
+                    el.className = "nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium bg-gearOrange text-white shadow-md shadow-gearOrange/20 transition";
+                } else {
+                    el.className = "nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition";
+                }
+            });
+
+            applyFilters();
+        }
+
+        // Filtro por Tags Superiores
+        function filterTag(tag) {
+            currentTag = tag;
+            document.querySelectorAll('.tag-btn').forEach(btn => {
+                if(btn.innerText.toLowerCase().includes(tag.toLowerCase()) || (tag === 'Todos' && btn.innerText === 'Tudo')) {
+                    btn.className = "tag-btn active px-4 py-1.5 rounded-full text-xs font-semibold bg-white text-black whitespace-nowrap transition shadow";
+                } else {
+                    btn.className = "tag-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-gearCard text-gray-300 hover:bg-neutral-700 hover:text-white whitespace-nowrap transition border border-gearBorder";
+                }
+            });
+            applyFilters();
+        }
+
+        // Aplicar Filtros combinados e Barra de Pesquisa
+        function applyFilters() {
+            const searchQuery = document.getElementById('search-input').value.toLowerCase();
+            let filtered = videosData;
+
+            if(currentTag !== 'Todos') {
+                filtered = filtered.filter(v => v.tag.toLowerCase().includes(currentTag.toLowerCase()) || v.category.toLowerCase().includes(currentTag.toLowerCase()));
+            }
+
+            if(searchQuery.trim() !== '') {
+                filtered = filtered.filter(v => v.title.toLowerCase().includes(searchQuery) || v.channel.toLowerCase().includes(searchQuery) || v.category.toLowerCase().includes(searchQuery));
+            }
+
+            renderVideos(filtered);
+        }
+
+        function resetFilter() {
+            document.getElementById('search-input').value = '';
+            filterCategory('Início');
+            filterTag('Todos');
+        }
+
+        // Controle da Modal
+        function openModal(title, desc) {
+            const modal = document.getElementById('app-modal');
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            document.getElementById('modal-extra-content').innerHTML = `
+                <input type="text" placeholder="Digite sua informação aqui..." class="w-full bg-[#1a1a1a] border border-gearBorder text-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-gearOrange transition text-sm">
+            `;
+            document.getElementById('modal-action-btn').innerText = "Salvar / Enviar";
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('app-modal').classList.add('hidden');
+        }
+
+        function modalAction() {
+            closeModal();
+        }
+
+        // Event Listeners para busca em tempo real
+        document.getElementById('search-input').addEventListener('input', applyFilters);
+        document.getElementById('search-btn').addEventListener('click', applyFilters);
+
+        // Toggle Sidebar em telas menores
+        document.getElementById('sidebar-toggle').addEventListener('click', () => {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Inicializar renderização ao carregar a página
+        window.onload = () => {
+            renderVideos(videosData);
+        };
+    </script>
+</body>
+</html>
