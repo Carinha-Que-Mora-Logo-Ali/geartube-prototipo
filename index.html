@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GearTube Play - Sua plataforma de vídeos automotivos</title>
     <!-- Tailwind CSS CDN -->
-    <!-- link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -49,6 +48,79 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #ff5722;
         }
+
+        /* GearTube Play — ajustes responsivos */
+        html { scroll-behavior: smooth; }
+        body { min-width: 320px; }
+        img { max-width: 100%; }
+        .no-scrollbar { scrollbar-width: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        #mobile-search { display: none; }
+        #sidebar { width: 16rem; transform: translateX(0); will-change: transform; }
+        #sidebar-overlay { display: none; }
+        #sidebar-overlay.is-visible { display: block; }
+        #video-grid > * { min-width: 0; }
+        #app-modal { padding: 1rem; overflow-y: auto; }
+        #app-modal > div { max-height: calc(100dvh - 2rem); overflow-y: auto; }
+
+        @media (max-width: 1023px) {
+            #sidebar {
+                transform: translateX(-100%);
+                width: min(18rem, 86vw);
+                box-shadow: 16px 0 40px rgba(0,0,0,.38);
+            }
+            #sidebar.sidebar-open { transform: translateX(0); }
+            #sidebar-overlay.is-visible {
+                position: fixed; inset: 4rem 0 0; z-index: 35;
+                background: rgba(0,0,0,.62);
+            }
+            main { margin-left: 0 !important; width: 100%; }
+        }
+        @media (max-width: 767px) {
+            header {
+                height: 4rem !important; padding: 0 .65rem !important; gap: .35rem;
+            }
+            header > div:first-child { min-width: 0; gap: .35rem !important; }
+            #sidebar-toggle { padding: .45rem; flex: 0 0 auto; }
+            header .fa-gauge-high { font-size: 1rem !important; }
+            header .bg-gradient-to-tr { padding: .5rem !important; border-radius: .7rem !important; }
+            header .tracking-wider { font-size: .88rem !important; letter-spacing: .04em !important; }
+            header > div:last-child { gap: .1rem !important; flex: 0 0 auto; }
+            header > div:last-child > button { padding: .45rem !important; }
+            header > div:last-child > button i { font-size: .95rem !important; }
+            header > div:last-child > div { padding: .25rem !important; border: 0 !important; background: transparent !important; }
+            header > div:last-child > div > div { width: 1.9rem !important; height: 1.9rem !important; }
+            #mobile-search {
+                display: flex; position: sticky; top: 4rem; z-index: 30;
+                padding: .65rem .85rem; background: rgba(18,18,18,.97);
+                border-bottom: 1px solid #2d2d2d; backdrop-filter: blur(12px);
+            }
+            #mobile-search input { min-width: 0; }
+            .app-shell { padding-top: 4rem !important; }
+            main { padding: 1rem .85rem 2rem !important; }
+            #video-grid { grid-template-columns: minmax(0,1fr) !important; gap: 1rem !important; }
+            #video-grid .p-4 { padding: .85rem !important; }
+            #section-title { font-size: 1.15rem !important; line-height: 1.35; }
+            #video-count { text-align: right; max-width: 7.5rem; line-height: 1.35; }
+            #app-modal { align-items: flex-end !important; padding: .65rem !important; }
+            #app-modal > div {
+                width: 100% !important; max-width: none !important; margin: 0 !important;
+                padding: 1.1rem !important; border-radius: 1.25rem 1.25rem .75rem .75rem !important;
+                max-height: calc(100dvh - 1.3rem);
+            }
+        }
+        @media (min-width: 520px) and (max-width: 767px) {
+            #video-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+        }
+        @media (max-width: 380px) {
+            header .tracking-wider { font-size: .76rem !important; }
+            header > div:last-child > button[title="Upload"] { display: none; }
+            #video-count { font-size: .65rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+        }
+
     </style>
 </head>
 <body class="bg-gearDark min-h-screen flex flex-col overflow-x-hidden">
@@ -57,7 +129,7 @@
     <header class="fixed top-0 left-0 right-0 h-16 bg-gearDark/95 backdrop-blur border-b border-gearBorder z-50 flex items-center justify-between px-4 lg:px-6">
         <!-- Logo e Menu Toggle -->
         <div class="flex items-center space-x-4">
-            <button id="sidebar-toggle" class="text-gray-400 hover:text-white p-2 rounded-lg transition">
+            <button id="sidebar-toggle" type="button" aria-label="Abrir menu" aria-controls="sidebar" aria-expanded="false" class="text-gray-400 hover:text-white p-2 rounded-lg transition">
                 <i class="fa-solid fa-bars text-xl"></i>
             </button>
             <div class="flex items-center space-x-2 cursor-pointer" onclick="resetFilter()">
@@ -100,20 +172,33 @@
         </div>
     </header>
 
+
+    <div id="mobile-search" class="items-center">
+        <div class="relative w-full flex items-center">
+            <input type="text" id="mobile-search-input" placeholder="Pesquisar vídeos automotivos..."
+                class="w-full bg-[#1a1a1a] border border-gearBorder text-gray-200 pl-4 pr-12 py-2.5 rounded-l-full focus:outline-none focus:border-gearOrange transition text-sm">
+            <button id="mobile-search-btn" type="button" aria-label="Pesquisar"
+                class="bg-[#262626] border border-l-0 border-gearBorder px-5 py-2.5 rounded-r-full text-gray-400 hover:text-white hover:bg-gearOrange hover:border-gearOrange transition flex items-center justify-center">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </div>
+    </div>
+
     <!-- Corpo Principal -->
-    <div class="flex pt-16 min-h-screen flex-1">
+    <div class="app-shell flex pt-16 min-h-screen flex-1">
         
+        <div id="sidebar-overlay" aria-hidden="true"></div>
         <!-- Sidebar Esquerda -->
         <aside id="sidebar" class="w-64 bg-gearSidebar border-r border-gearBorder fixed top-16 bottom-0 left-0 z-40 overflow-y-auto transition-all duration-300 flex flex-col justify-between p-4">
             <div class="space-y-6">
                 <!-- Navegação Principal -->
                 <div class="space-y-1">
                     <p class="px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Menu</p>
-                    <a href="#" onclick="filterCategory('Início')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium bg-gearOrange text-white shadow-md shadow-gearOrange/20 transition">
+                    <a href="#" onclick="event.preventDefault(); filterCategory('Início')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium bg-gearOrange text-white shadow-md shadow-gearOrange/20 transition">
                         <i class="fa-solid fa-house w-5 text-center"></i>
                         <span>Início</span>
                     </a>
-                    <a href="#" onclick="filterCategory('Explorar')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
+                    <a href="#" onclick="event.preventDefault(); filterCategory('Explorar')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
                         <i class="fa-solid fa-compass w-5 text-center"></i>
                         <span>Explorar</span>
                     </a>
@@ -122,23 +207,23 @@
                 <!-- Categorias de Oficina -->
                 <div class="space-y-1 pt-2 border-t border-gearBorder">
                     <p class="px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Oficina & Conteúdo</p>
-                    <a href="#" onclick="filterCategory('Mecânica')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
+                    <a href="#" onclick="event.preventDefault(); filterCategory('Mecânica')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
                         <i class="fa-solid fa-wrench w-5 text-center"></i>
                         <span>Mecânica</span>
                     </a>
-                    <a href="#" onclick="filterCategory('Restauração')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
+                    <a href="#" onclick="event.preventDefault(); filterCategory('Restauração')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
                         <i class="fa-solid fa-car-rear w-5 text-center"></i>
                         <span>Restauração</span>
                     </a>
-                    <a href="#" onclick="filterCategory('Preparação')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
+                    <a href="#" onclick="event.preventDefault(); filterCategory('Preparação')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
                         <i class="fa-solid fa-gauge w-5 text-center"></i>
                         <span>Preparação</span>
                     </a>
-                    <a href="#" onclick="filterCategory('Drift')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
+                    <a href="#" onclick="event.preventDefault(); filterCategory('Drift')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
                         <i class="fa-solid fa-road w-5 text-center"></i>
                         <span>Drift</span>
                     </a>
-                    <a href="#" onclick="filterCategory('Oficinas')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
+                    <a href="#" onclick="event.preventDefault(); filterCategory('Oficinas')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
                         <i class="fa-solid fa-screwdriver-wrench w-5 text-center"></i>
                         <span>Oficinas</span>
                     </a>
@@ -147,11 +232,11 @@
                 <!-- Social & Perfil -->
                 <div class="space-y-1 pt-2 border-t border-gearBorder">
                     <p class="px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Comunidade</p>
-                    <a href="#" onclick="filterCategory('Comunidade')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
+                    <a href="#" onclick="event.preventDefault(); filterCategory('Comunidade')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
                         <i class="fa-solid fa-users w-5 text-center"></i>
                         <span>Comunidade</span>
                     </a>
-                    <a href="#" onclick="filterCategory('Favoritos')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
+                    <a href="#" onclick="event.preventDefault(); filterCategory('Favoritos')" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition">
                         <i class="fa-solid fa-heart w-5 text-center"></i>
                         <span>Favoritos</span>
                     </a>
@@ -425,6 +510,13 @@
                 filtered = filtered.filter(v => v.tag.toLowerCase().includes(currentTag.toLowerCase()) || v.category.toLowerCase().includes(currentTag.toLowerCase()));
             }
 
+            if(currentFilter !== 'Início' && currentFilter !== 'Explorar') {
+                filtered = filtered.filter(v =>
+                    v.category.toLowerCase().includes(currentFilter.toLowerCase()) ||
+                    v.tag.toLowerCase().includes(currentFilter.toLowerCase())
+                );
+            }
+
             if(searchQuery.trim() !== '') {
                 filtered = filtered.filter(v => v.title.toLowerCase().includes(searchQuery) || v.channel.toLowerCase().includes(searchQuery) || v.category.toLowerCase().includes(searchQuery));
             }
@@ -434,6 +526,8 @@
 
         function resetFilter() {
             document.getElementById('search-input').value = '';
+            const mobileSearch = document.getElementById('mobile-search-input');
+            if (mobileSearch) mobileSearch.value = '';
             filterCategory('Início');
             filterTag('Todos');
         }
@@ -462,16 +556,60 @@
         document.getElementById('search-input').addEventListener('input', applyFilters);
         document.getElementById('search-btn').addEventListener('click', applyFilters);
 
-        // Toggle Sidebar em telas menores
-        document.getElementById('sidebar-toggle').addEventListener('click', () => {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('-translate-x-full');
+        // Menu lateral responsivo (drawer em tablets e celulares).
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        function setSidebarOpen(open) {
+            const mobileLayout = window.matchMedia('(max-width: 1023px)').matches;
+            if (!mobileLayout) {
+                sidebar.classList.remove('sidebar-open');
+                sidebarOverlay.classList.remove('is-visible');
+                sidebarToggle.setAttribute('aria-expanded', 'false');
+                document.body.classList.remove('overflow-hidden');
+                return;
+            }
+            sidebar.classList.toggle('sidebar-open', open);
+            sidebarOverlay.classList.toggle('is-visible', open);
+            sidebarToggle.setAttribute('aria-expanded', String(open));
+            sidebarToggle.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+            document.body.classList.toggle('overflow-hidden', open);
+        }
+
+        sidebarToggle.addEventListener('click', () => setSidebarOpen(!sidebar.classList.contains('sidebar-open')));
+        sidebarOverlay.addEventListener('click', () => setSidebarOpen(false));
+        document.querySelectorAll('#sidebar a').forEach(link => link.addEventListener('click', () => setSidebarOpen(false)));
+
+        // Pesquisa sincronizada entre o cabeçalho desktop e a barra mobile.
+        const desktopSearch = document.getElementById('search-input');
+        const mobileSearch = document.getElementById('mobile-search-input');
+        function runSearch(value) {
+            desktopSearch.value = value;
+            mobileSearch.value = value;
+            applyFilters();
+        }
+        desktopSearch.addEventListener('input', () => {
+            mobileSearch.value = desktopSearch.value;
+            applyFilters();
+        });
+        mobileSearch.addEventListener('input', () => {
+            desktopSearch.value = mobileSearch.value;
+            applyFilters();
+        });
+        document.getElementById('mobile-search-btn').addEventListener('click', () => runSearch(mobileSearch.value));
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                closeModal();
+                setSidebarOpen(false);
+            }
+        });
+        window.addEventListener('resize', () => {
+            if (!window.matchMedia('(max-width: 1023px)').matches) setSidebarOpen(false);
         });
 
-        // Inicializar renderização ao carregar a página
-        window.onload = () => {
-            renderVideos(videosData);
-        };
+        window.addEventListener('DOMContentLoaded', () => renderVideos(videosData));
     </script>
 </body>
 </html>
