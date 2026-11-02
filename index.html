@@ -157,7 +157,7 @@
                 </div>
             </div>
 
-            <!-- Banner Conta Grátis (Igual à imagem) -->
+            <!-- Banner Conta Grátis -->
             <div class="mt-6 p-4 rounded-2xl bg-gradient-to-br from-neutral-800 to-neutral-900 border border-gearBorder relative overflow-hidden group">
                 <div class="absolute -right-4 -bottom-4 text-gearOrange/10 text-6xl pointer-events-none">
                     <i class="fa-solid fa-car-side"></i>
@@ -224,7 +224,7 @@
 
     <!-- JavaScript Application Logic -->
     <script>
-        // Base de dados de vídeos inspirada na imagem de referência do GearTube Play
+        // Base de dados de vídeos
         const videosData = [
             {
                 id: 1,
@@ -306,7 +306,7 @@
             }
         ];
 
-        let currentFilter = 'Todos';
+        let currentFilter = 'Início';
         let currentTag = 'Todos';
 
         // Renderizar a grade de vídeos
@@ -330,11 +330,12 @@
 
             items.forEach(video => {
                 const card = document.createElement('div');
-                card.className = "bg-gearCard border border-gearBorder rounded-2xl overflow-hidden hover:border-gearOrange transition group cursor-pointer flex flex-col justify-between";
-                card.onclick = () => playVideo(video);
+                card.className = "bg-gearCard border border-gearBorder rounded-2xl overflow-hidden hover:border-gearOrange transition group flex flex-col justify-between";
 
+                // Implemento foi aqui: Envolvemos o conteúdo do card em um link <a> apontando para watch.html
                 card.innerHTML = `
-                    <div>
+                    <!-- Implemento foi aqui -->
+                    <a href="watch.html" class="block cursor-pointer flex-1 flex flex-col">
                         <div class="relative aspect-video overflow-hidden bg-neutral-900">
                             <img src="${video.thumbnail}" alt="${video.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80'">
                             <div class="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-md backdrop-blur">
@@ -344,133 +345,21 @@
                                 ${video.badge}
                             </div>
                         </div>
-                        <div class="p-4 flex space-x-3">
+                        <div class="p-4 flex space-x-3 flex-1">
                             <img src="${video.avatar}" alt="${video.channel}" class="w-9 h-9 rounded-full object-cover border border-gearBorder flex-shrink-0" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80'">
                             <div class="flex-1 min-w-0">
                                 <h3 class="text-sm font-semibold text-white group-hover:text-gearOrange transition line-clamp-2 leading-snug mb-1">${video.title}</h3>
                                 <p class="text-xs text-gray-400 hover:text-white transition truncate mb-0.5">${video.channel}</p>
                                 <p class="text-[11px] text-gray-500">${video.views} &bull; ${video.time}</p>
                             </div>
-                            <button onclick="event.stopPropagation(); openModal('Opções do Vídeo', 'Gerenciar compartilhamento ou salvar favorito para: ${video.title}')" class="text-gray-400 hover:text-white h-fit p-1">
-                                <i class="fa-solid fa-ellipsis-vertical"></i>
-                            </button>
                         </div>
-                    </div>
+                    </a>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        // Simular Reprodução / Player Modal
-        function playVideo(video) {
-            const modal = document.getElementById('app-modal');
-            document.getElementById('modal-title').innerText = video.title;
-            document.getElementById('modal-desc').innerText = `Canal: ${video.channel} | ${video.views} (${video.time})`;
-            
-            document.getElementById('modal-extra-content').innerHTML = `
-                <div class="aspect-video w-full bg-black rounded-xl overflow-hidden relative border border-gearBorder">
-                    <img src="${video.thumbnail}" class="w-full h-full object-cover opacity-60">
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <div class="w-16 h-16 bg-gearOrange rounded-full flex items-center justify-center text-white text-xl shadow-2xl animate-pulse cursor-pointer">
-                            <i class="fa-solid fa-play ml-1"></i>
-                        </div>
-                    </div>
-                    <div class="absolute bottom-2 left-2 right-2 bg-black/60 backdrop-blur p-2 rounded-lg text-xs text-gray-300 flex justify-between items-center">
-                        <span>Reproduzindo protótipo GearTube Play...</span>
-                        <span class="text-gearOrange font-bold">${video.duration}</span>
-                    </div>
-                </div>
-            `;
-            document.getElementById('modal-action-btn').innerText = "Curtir e Inscrever-se";
-            modal.classList.remove('hidden');
-        }
-
         // Filtro por Categoria Lateral
         function filterCategory(category) {
             currentFilter = category;
-            document.getElementById('section-title').innerHTML = `<span>${category === 'Início' ? 'Explorando o Mundo Automotivo' : category}</span>`;
-            
-            // Atualizar classes ativas no menu
-            document.querySelectorAll('#sidebar a').forEach(el => {
-                if(el.innerText.includes(category)) {
-                    el.className = "nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium bg-gearOrange text-white shadow-md shadow-gearOrange/20 transition";
-                } else {
-                    el.className = "nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-gearCard hover:text-white transition";
-                }
-            });
-
-            applyFilters();
-        }
-
-        // Filtro por Tags Superiores
-        function filterTag(tag) {
-            currentTag = tag;
-            document.querySelectorAll('.tag-btn').forEach(btn => {
-                if(btn.innerText.toLowerCase().includes(tag.toLowerCase()) || (tag === 'Todos' && btn.innerText === 'Tudo')) {
-                    btn.className = "tag-btn active px-4 py-1.5 rounded-full text-xs font-semibold bg-white text-black whitespace-nowrap transition shadow";
-                } else {
-                    btn.className = "tag-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-gearCard text-gray-300 hover:bg-neutral-700 hover:text-white whitespace-nowrap transition border border-gearBorder";
-                }
-            });
-            applyFilters();
-        }
-
-        // Aplicar Filtros combinados e Barra de Pesquisa
-        function applyFilters() {
-            const searchQuery = document.getElementById('search-input').value.toLowerCase();
-            let filtered = videosData;
-
-            if(currentTag !== 'Todos') {
-                filtered = filtered.filter(v => v.tag.toLowerCase().includes(currentTag.toLowerCase()) || v.category.toLowerCase().includes(currentTag.toLowerCase()));
-            }
-
-            if(searchQuery.trim() !== '') {
-                filtered = filtered.filter(v => v.title.toLowerCase().includes(searchQuery) || v.channel.toLowerCase().includes(searchQuery) || v.category.toLowerCase().includes(searchQuery));
-            }
-
-            renderVideos(filtered);
-        }
-
-        function resetFilter() {
-            document.getElementById('search-input').value = '';
-            filterCategory('Início');
-            filterTag('Todos');
-        }
-
-        // Controle da Modal
-        function openModal(title, desc) {
-            const modal = document.getElementById('app-modal');
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-desc').innerText = desc;
-            document.getElementById('modal-extra-content').innerHTML = `
-                <input type="text" placeholder="Digite sua informação aqui..." class="w-full bg-[#1a1a1a] border border-gearBorder text-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-gearOrange transition text-sm">
-            `;
-            document.getElementById('modal-action-btn').innerText = "Salvar / Enviar";
-            modal.classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('app-modal').classList.add('hidden');
-        }
-
-        function modalAction() {
-            closeModal();
-        }
-
-        // Event Listeners para busca em tempo real
-        document.getElementById('search-input').addEventListener('input', applyFilters);
-        document.getElementById('search-btn').addEventListener('click', applyFilters);
-
-        // Toggle Sidebar em telas menores
-        document.getElementById('sidebar-toggle').addEventListener('click', () => {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('-translate-x-full');
-        });
-
-        // Inicializar renderização ao carregar a página
-        window.onload = () => {
-            renderVideos(videosData);
-        };
-    </script>
-</body>
-</html>
+            document.getElementById('section-title').innerHTML =
